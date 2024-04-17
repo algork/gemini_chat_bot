@@ -117,6 +117,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                     ],
                   ),
           ),
+          if (_loading) Text('Gemini GPT is typing...'),
           Padding(
             padding: const EdgeInsets.symmetric(
               vertical: 25,
@@ -131,7 +132,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                     decoration: textFieldDecoration,
                     controller: _textController,
                     onSubmitted: (String value) {
-                      if (_textController.text.trim().isNotEmpty) {
+                      if (_textController.text.trim().isNotEmpty || !_loading) {
                         _sendChatMessage(value);
                       }
                     },
@@ -145,22 +146,19 @@ class _ChatWidgetState extends State<ChatWidget> {
                 const SizedBox.square(
                   dimension: 15,
                 ),
-                if (!_loading)
-                  IconButton(
-                    onPressed: _textController.text.trim().isNotEmpty
-                        ? () async {
-                            _sendChatMessage(_textController.text);
-                          }
-                        : null,
-                    icon: Icon(
-                      Icons.send,
-                      color: _textController.text.trim().isNotEmpty
-                          ? Theme.of(context).colorScheme.primary
-                          : Colors.grey,
-                    ),
-                  )
-                else
-                  const CircularProgressIndicator(),
+                IconButton(
+                  onPressed: _textController.text.trim().isNotEmpty || !_loading
+                      ? () async {
+                          _sendChatMessage(_textController.text);
+                        }
+                      : null,
+                  icon: Icon(
+                    Icons.send,
+                    color: _textController.text.trim().isNotEmpty || !_loading
+                        ? Theme.of(context).colorScheme.primary
+                        : Colors.grey,
+                  ),
+                )
               ],
             ),
           ),
@@ -174,6 +172,8 @@ class _ChatWidgetState extends State<ChatWidget> {
       _loading = true;
     });
     try {
+      _textController.clear();
+
       var response = await _chat.sendMessage(
         Content.text(message),
       );
@@ -193,7 +193,6 @@ class _ChatWidgetState extends State<ChatWidget> {
         _loading = false;
       });
     } finally {
-      _textController.clear();
       setState(() {
         _loading = false;
       });
