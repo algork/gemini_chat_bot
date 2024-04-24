@@ -20,22 +20,30 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  bool isBusy = false;
 
   @override
   void initState() {
     super.initState();
     emailController.text = '';
     passwordController.text = '';
+    isBusy = false;
   }
 
   @override
   Widget build(BuildContext context) {
     void signIn() async {
+      setState(() {
+        isBusy = true;
+      });
       final authService = Provider.of<AuthService>(context, listen: false);
 
       try {
         await authService.signInWithEmailAndPassword(
             email: emailController.text, password: passwordController.text);
+        setState(() {
+          isBusy = false;
+        });
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -50,6 +58,9 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
         );
+        setState(() {
+          isBusy = false;
+        });
       }
     }
 
@@ -109,14 +120,15 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       SizedBox(height: 20),
                       GeminiButton(
-                        label: 'Sign In',
+                        isBusy: isBusy,
+                        label: 'Log In',
                         onTap: signIn,
                       ),
                       SizedBox(height: 20),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('Not a member?'),
+                          Text("Dont't have an account?"),
                           SizedBox(width: 12),
                           GestureDetector(
                             onTap: widget.onPageToggle,

@@ -21,6 +21,17 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
 
+  bool isBusy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    emailController.text = '';
+    passwordController.text = '';
+    confirmPasswordController.text = '';
+    isBusy = false;
+  }
+
   void createUser() async {
     if (passwordController.text != confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -39,10 +50,15 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
     final authService = Provider.of<AuthService>(context, listen: false);
-
+    setState(() {
+      isBusy = true;
+    });
     try {
       await authService.createUserWithEmailAndPassword(
           email: emailController.text, password: passwordController.text);
+      setState(() {
+        isBusy = false;
+      });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -57,6 +73,9 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
         ),
       );
+      setState(() {
+        isBusy = false;
+      });
     }
   }
 
@@ -115,6 +134,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       SizedBox(height: 20),
                       GeminiButton(
+                        isBusy: isBusy,
                         label: 'Create Account',
                         onTap: createUser,
                       ),
@@ -127,7 +147,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           GestureDetector(
                             onTap: widget.onPageToggle,
                             child: Text(
-                              'Sign in now',
+                              'Log in now',
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),

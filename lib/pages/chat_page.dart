@@ -18,11 +18,33 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     void signOut() {
       final authService = Provider.of<AuthService>(context, listen: false);
-      authService.signOut();
+      showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: Text('Logging out...'),
+          content: Text('Are you sure you want to log out?'),
+          actions: [
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: Colors.grey.shade800),
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: Colors.red.shade800),
+              onPressed: () {
+                Navigator.pop(context);
+                authService.signOut();
+              },
+              child: Text('Log Out'),
+            ),
+          ],
+        ),
+      );
     }
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.grey.shade200,
         title: Text('Gemini GPT'),
         actions: [IconButton(onPressed: signOut, icon: Icon(Icons.logout_outlined))],
       ),
@@ -53,6 +75,7 @@ class _ChatWidgetState extends State<ChatWidget> {
       apiKey: _apiKey,
     );
     _chat = _model.startChat();
+    _textController.text = '';
   }
 
   void _scrollDown() {
@@ -117,7 +140,11 @@ class _ChatWidgetState extends State<ChatWidget> {
                     ],
                   ),
           ),
-          if (_loading) Text('Gemini GPT is typing...'),
+          if (_loading)
+            Padding(
+              padding: EdgeInsets.only(left: 12),
+              child: Text('Gemini GPT is typing...'),
+            ),
           Padding(
             padding: const EdgeInsets.symmetric(
               vertical: 25,
@@ -132,8 +159,9 @@ class _ChatWidgetState extends State<ChatWidget> {
                     decoration: textFieldDecoration,
                     controller: _textController,
                     onSubmitted: (String value) {
-                      if (_textController.text.trim().isNotEmpty || !_loading) {
+                      if (_textController.text.trim().isNotEmpty && !_loading) {
                         _sendChatMessage(value);
+                        _textFieldFocus.requestFocus();
                       }
                     },
                     onChanged: (value) {
@@ -147,16 +175,16 @@ class _ChatWidgetState extends State<ChatWidget> {
                   dimension: 15,
                 ),
                 IconButton(
-                  onPressed: _textController.text.trim().isNotEmpty || !_loading
+                  onPressed: _textController.text.trim().isNotEmpty && !_loading
                       ? () async {
                           _sendChatMessage(_textController.text);
                         }
                       : null,
                   icon: Icon(
                     Icons.send,
-                    color: _textController.text.trim().isNotEmpty || !_loading
-                        ? Theme.of(context).colorScheme.primary
-                        : Colors.grey,
+                    color: _textController.text.trim().isNotEmpty && !_loading
+                        ? Colors.black
+                        : Colors.grey.shade400,
                   ),
                 )
               ],
